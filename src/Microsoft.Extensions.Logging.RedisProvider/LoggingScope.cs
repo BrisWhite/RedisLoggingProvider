@@ -28,6 +28,11 @@ namespace Microsoft.Extensions.Logging.RedisProvider
 
         public LoggingScope(string id)
         {
+            if (string.IsNullOrWhiteSpace(id)) 
+            {
+                id = Guid.NewGuid().ToString();
+            }
+
             Id = id;
         }
 

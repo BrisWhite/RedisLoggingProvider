@@ -6,16 +6,22 @@ namespace Microsoft.Extensions.Logging.RedisProvider
 {
     public class EventBuilder
     {
-        public EventBuilder(Event ev)
+        public EventBuilder(BaseEventData ev)
         {
             Target = ev;
         }
 
-        public Event Target { get; private set; }
+        public BaseEventData Target { get; private set; }
 
         public EventBuilder SetMessage(string message)
         {
             Target.Message = message;
+            return this;
+        }
+
+        public EventBuilder SetActionId(string actionId)
+        {
+            Target.ActionId = actionId;
             return this;
         }
 
@@ -46,6 +52,10 @@ namespace Microsoft.Extensions.Logging.RedisProvider
         public EventBuilder SetException(Exception exception) 
         {
             Target.Exception = exception;
+            if (string.IsNullOrWhiteSpace(Target.Message)) 
+            {
+                SetMessage(exception.Message);
+            }
             return this;
         }
     }

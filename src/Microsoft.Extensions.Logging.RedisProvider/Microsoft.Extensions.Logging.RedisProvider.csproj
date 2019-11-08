@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Description>简易版基于ILogger扩展的Redis日志组件，支持结构化日志。</Description>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>

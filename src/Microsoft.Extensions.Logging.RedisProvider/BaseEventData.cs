@@ -2,16 +2,18 @@
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Net.NetworkInformation;
-using System.Net.Sockets;
 using System.Text;
 
 namespace Microsoft.Extensions.Logging.RedisProvider
 {
-    public class Event
+    public abstract class BaseEventData : IEventData
     {
+        /// <summary>
+        /// 请求的唯一ID
+        /// </summary>
+        public string ActionId { get; set; }
+
         /// <summary>
         /// 主要记录调用来源
         /// </summary>
@@ -22,6 +24,9 @@ namespace Microsoft.Extensions.Logging.RedisProvider
         /// </summary>
         public string Host { get; set; }
 
+        /// <summary>
+        /// 主机名
+        /// </summary>
         public string HostName { get; set; }
 
         /// <summary>
@@ -52,34 +57,12 @@ namespace Microsoft.Extensions.Logging.RedisProvider
         [JsonIgnore]
         public Exception Exception { get; set; }
 
-        public Event()
+        public BaseEventData()
         {
             Data = new Dictionary<string, object>();
             TimeStamp = DateTime.Now;
-            Host = GetIpAddress();
+            Host = Utils.GetIpAddress();
             HostName = Dns.GetHostName();
-        }
-
-        private string GetIpAddress()
-        {
-            var allIntefaces = NetworkInterface.GetAllNetworkInterfaces();
-
-            var firstUpInterface = allIntefaces
-                .OrderByDescending(c => c.Speed)
-                .FirstOrDefault(c => 
-                c.NetworkInterfaceType != NetworkInterfaceType.Loopback && c.OperationalStatus == OperationalStatus.Up);
-            if (firstUpInterface != null)
-            {
-                var props = firstUpInterface.GetIPProperties();
-                // get first IPV4 address assigned to this interface
-                var firstIpV4Address = props.UnicastAddresses
-                    .Where(c => c.Address.AddressFamily == AddressFamily.InterNetwork)
-                    .Select(c => c.Address)
-                    .FirstOrDefault();
-
-                return firstIpV4Address.ToString();
-            }
-            return "::";
         }
     }
 

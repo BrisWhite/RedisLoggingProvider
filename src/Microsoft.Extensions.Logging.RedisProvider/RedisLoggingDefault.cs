@@ -24,6 +24,6 @@ namespace Microsoft.Extensions.Logging.RedisProvider
         /// <summary>
         /// 异常名称
         /// </summary>
-        public static string ExceptionPropertyName = "exception";
+        public static string ExceptionPropertyName = "Exception";
     }
 }

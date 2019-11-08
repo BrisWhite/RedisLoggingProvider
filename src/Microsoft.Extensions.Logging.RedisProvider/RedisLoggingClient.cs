@@ -8,6 +8,7 @@ namespace Microsoft.Extensions.Logging.RedisProvider
     public class RedisLoggingClient
     {
         private readonly Lazy<RedisPushClient> _redisPushClient;
+        private readonly ILoggingFormat _loggingFormat;
 
         public RedisLoggingClient(RedisLoggingConfiguration configuration)
         {
@@ -17,17 +18,24 @@ namespace Microsoft.Extensions.Logging.RedisProvider
             }
 
             Configuration = configuration;
-            _redisPushClient = new Lazy<RedisPushClient>(() => 
+            _redisPushClient = new Lazy<RedisPushClient>(() =>
             {
                 return new RedisPushClient(configuration);
             });
+
+            _loggingFormat = (ILoggingFormat)Activator.CreateInstance(configuration.LoggingFormatType, configuration.EventTypeProperties);
         }
 
         public RedisLoggingConfiguration Configuration { get; set; }
 
+        private BaseEventData GetEventData()
+        {
+            return (BaseEventData)Activator.CreateInstance(Configuration.EventType);
+        }
+
         public EventBuilder CreateEvent()
         {
-            return new EventBuilder(new Event());
+            return new EventBuilder(GetEventData());
         }
 
         public EventBuilder CreateLog(string source, string message, LogLevel level)
@@ -35,48 +43,9 @@ namespace Microsoft.Extensions.Logging.RedisProvider
             return CreateEvent().SetSource(source).SetMessage(message).SetLevel(level.ToString());
         }
 
-        private void AddJObject(JObject jObject, string name, object obj)
-        {
-            if (obj == null)
-            {
-                jObject.Add(name, new JValue("null"));
-                return;
-            }
-
-            var fullName = obj.GetType().FullName;
-            if (obj.GetType().IsValueType || fullName.StartsWith("System"))
-            {
-                if (fullName.StartsWith("System.Reflection"))
-                {
-                    return;
-                }
-
-                jObject.Add(name, new JValue(obj));
-                return;
-            }
-
-            var keyObject = JObject.FromObject(obj);
-            jObject.Add(name, keyObject);
-        }
-
         public void Submit(EventBuilder builder)
         {
-            var target = JObject.FromObject(builder.Target);
-            target.Add(RedisLoggingDefault.DataPropertyName, JObject.FromObject(new object()));
-
-            var tempObject = JObject.FromObject(new object());
-            foreach (var item in builder.Target.Data)
-            {
-                AddJObject(tempObject, item.Key, item.Value);
-            }
-
-            if (builder.Target.Exception != null)
-            {
-                tempObject.Add(RedisLoggingDefault.ExceptionPropertyName, JObject.FromObject(builder.Target.Exception));
-            }
-
-            target[RedisLoggingDefault.DataPropertyName] = tempObject;
-            string json = target.ToString();
+            var json = _loggingFormat.GetFormatLog(builder);
             _redisPushClient.Value.Push(json);
         }
     }

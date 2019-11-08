@@ -19,10 +19,6 @@ namespace RedisLoggingProvider.Sample
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-            .ConfigureLogging((hostingContext, logging) =>
-            {
-                logging.AddRedis(hostingContext.Configuration.GetSection("RedisLogging"));
-            }).UseStartup<Startup>();
+            WebHost.CreateDefaultBuilder(args).UseStartup<Startup>();
     }
 }

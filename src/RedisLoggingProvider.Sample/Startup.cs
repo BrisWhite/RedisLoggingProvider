@@ -38,12 +38,13 @@ namespace RedisLoggingProvider.Sample
 
             app.UseMvc();
 
-            //factory.AddRedis(x =>
-            //{
-            //    x.ConnectionString = Configuration.GetSection("RedisLogging")[nameof(RedisLoggingConfiguration.ConnectionString)];
-            //    x.Database = Configuration.GetSection("RedisLogging").GetValue<int>(nameof(RedisLoggingConfiguration.Database));
-            //    x.ProjectName = Configuration.GetSection("RedisLogging")[nameof(RedisLoggingConfiguration.ProjectName)];
-            //});
+            factory.AddRedis(x =>
+            {
+                x.ConnectionString = Configuration.GetSection("RedisLogging")[nameof(RedisLoggingConfiguration.ConnectionString)];
+                x.Database = Configuration.GetSection("RedisLogging").GetValue<int>(nameof(RedisLoggingConfiguration.Database));
+                x.ProjectName = Configuration.GetSection("RedisLogging")[nameof(RedisLoggingConfiguration.ProjectName)];
+                x.EventType = typeof(CustomeLoggingEvent);
+            });
         }
     }
 }

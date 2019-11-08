@@ -6,15 +6,36 @@ namespace Microsoft.Extensions.Logging.RedisProvider
 {
     public class RedisLoggingConfiguration
     {
+        private static List<string> properties = new List<string>();
+
         public string ConnectionString { get; set; }
 
         public int Database { get; set; }
 
         public string ProjectName { get; set; }
 
+        public Type LoggingFormatType { get; set; } = typeof(LoggingFormat);
+
+        public Type EventType { get; set; } = typeof(InternalEvent);
+
+        public IEnumerable<string> EventTypeProperties 
+        {
+            get 
+            {
+                if (properties.Count == 0) 
+                {
+                    foreach (var info in EventType.GetProperties())
+                    {
+                        properties.Add(info.Name);
+                    }
+                }
+                return properties;
+            }
+        }
+
         public RedisLoggingConfiguration() { }
 
-        public void SetConfiguration(string connectionString, int db, string projectName) 
+        public void SetConfiguration(string connectionString, int db, string projectName)
         {
             ConnectionString = connectionString;
             Database = db;

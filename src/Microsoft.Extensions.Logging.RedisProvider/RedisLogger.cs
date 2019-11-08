@@ -64,10 +64,8 @@ namespace Microsoft.Extensions.Logging.RedisProvider
                 builder.AddProperty(RedisLoggingDefault.EventId, eventId.Id);
             }
 
-            if (LoggingScope.Current != null)
-            {
-                builder.AddProperty(RedisLoggingDefault.ActionId, LoggingScope.Current.Id);
-            }
+            builder.SetActionId((LoggingScope.Current?.Id ?? Guid.NewGuid().ToString()));
+
             if (state is IEnumerable<KeyValuePair<string, object>> stateProps)
             {
                 foreach (var prop in stateProps)
