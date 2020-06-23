@@ -19,6 +19,8 @@ namespace Microsoft.Extensions.Logging.RedisProvider
 
         string Message { get; set; }
 
+        string UserId { get; set; }
+
         Dictionary<string, object> Data { get; set; }
     }
 }

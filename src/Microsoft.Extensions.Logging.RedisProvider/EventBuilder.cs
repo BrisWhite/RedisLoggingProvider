@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -22,6 +23,12 @@ namespace Microsoft.Extensions.Logging.RedisProvider
         public EventBuilder SetActionId(string actionId)
         {
             Target.ActionId = actionId;
+            return this;
+        }
+
+        public EventBuilder SetUserId(string userId)
+        {
+            Target.UserId = userId;
             return this;
         }
 

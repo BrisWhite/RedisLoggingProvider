@@ -22,8 +22,18 @@ namespace Microsoft.Extensions.Logging.RedisProvider
                 throw new ArgumentNullException(nameof(state));
             }
 
-            string id = state.ToString();
-            var scope = new LoggingScope(id);
+            var scope = new LoggingScope("");
+            if (typeof(RedisLogScopeInfo).IsAssignableFrom(typeof(TState)) ||
+                typeof(RedisLogScopeInfo) == typeof(TState))
+            {
+                var logRootInfo = state as RedisLogScopeInfo;
+                scope = new LoggingScope(logRootInfo.ActionId, logRootInfo.UserId);
+            }
+            else
+            {
+                string id = state.ToString();
+                scope = new LoggingScope(id);
+            }
 
             // Add to stack to support nesting within execution context
             LoggingScope.Push(scope);
@@ -54,7 +64,7 @@ namespace Microsoft.Extensions.Logging.RedisProvider
 
             var builder = _client.CreateLog(_source, message, logLevel);
 
-            if (exception != null) 
+            if (exception != null)
             {
                 builder.SetException(exception);
             }
@@ -64,7 +74,8 @@ namespace Microsoft.Extensions.Logging.RedisProvider
                 builder.AddProperty(RedisLoggingDefault.EventId, eventId.Id);
             }
 
-            builder.SetActionId((LoggingScope.Current?.Id ?? Guid.NewGuid().ToString()));
+            builder.SetActionId((LoggingScope.Current?.GetRootId() ?? Guid.NewGuid().ToString()));
+            builder.SetUserId((LoggingScope.Current?.GetRootUserId() ?? string.Empty));
 
             if (state is IEnumerable<KeyValuePair<string, object>> stateProps)
             {

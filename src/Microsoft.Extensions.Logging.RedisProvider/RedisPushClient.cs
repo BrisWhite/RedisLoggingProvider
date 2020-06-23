@@ -9,16 +9,13 @@ namespace Microsoft.Extensions.Logging.RedisProvider
     {
         private readonly RedisLoggingConfiguration _configuration;
         private readonly Lazy<ConnectionMultiplexer> _connectionMultiplexer;
+        private readonly IDatabase _database;
 
         public RedisPushClient(RedisLoggingConfiguration configuration)
         {
             _configuration = configuration;
             _connectionMultiplexer = new Lazy<ConnectionMultiplexer>(CreateConnectionMultiplexer);
-        }
-
-        private IDatabase GetDatabase()
-        {
-            return _connectionMultiplexer.Value.GetDatabase(_configuration.Database);
+            _database = _connectionMultiplexer.Value.GetDatabase(_configuration.Database);
         }
 
         private ConnectionMultiplexer CreateConnectionMultiplexer()
@@ -28,8 +25,7 @@ namespace Microsoft.Extensions.Logging.RedisProvider
 
         public void Push(string message)
         {
-            var database = GetDatabase();
-            database.ListLeftPush(_configuration.ProjectName, message);
+            _database.ListLeftPushAsync(_configuration.ProjectName, message).ConfigureAwait(false);
         }
     }
 }

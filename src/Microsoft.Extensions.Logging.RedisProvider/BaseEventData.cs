@@ -9,6 +9,8 @@ namespace Microsoft.Extensions.Logging.RedisProvider
 {
     public abstract class BaseEventData : IEventData
     {
+        private static string ipAddress;
+
         /// <summary>
         /// 请求的唯一ID
         /// </summary>
@@ -37,13 +39,17 @@ namespace Microsoft.Extensions.Logging.RedisProvider
         /// <summary>
         /// 时间戳
         /// </summary>
-        [JsonConverter(typeof(CustomDateTimeConverter))]
         public DateTime TimeStamp { get; set; }
 
         /// <summary>
         /// 日志消息
         /// </summary>
         public string Message { get; set; }
+
+        /// <summary>
+        /// 用户ID
+        /// </summary>
+        public string UserId { get; set; }
 
         /// <summary>
         /// 结构化信息
@@ -61,7 +67,11 @@ namespace Microsoft.Extensions.Logging.RedisProvider
         {
             Data = new Dictionary<string, object>();
             TimeStamp = DateTime.Now;
-            Host = Utils.GetIpAddress();
+            if (string.IsNullOrWhiteSpace(ipAddress)) 
+            {
+                ipAddress = Utils.GetIpAddress();
+            }
+            Host = ipAddress;
             HostName = Dns.GetHostName();
         }
     }

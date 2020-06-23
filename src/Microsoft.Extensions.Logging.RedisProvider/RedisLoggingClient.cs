@@ -1,13 +1,16 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 
 namespace Microsoft.Extensions.Logging.RedisProvider
 {
     public class RedisLoggingClient
     {
-        private readonly Lazy<RedisPushClient> _redisPushClient;
+        private readonly RedisPushClient _redisPushClient;
         private readonly ILoggingFormat _loggingFormat;
 
         public RedisLoggingClient(RedisLoggingConfiguration configuration)
@@ -21,7 +24,7 @@ namespace Microsoft.Extensions.Logging.RedisProvider
             _redisPushClient = new Lazy<RedisPushClient>(() =>
             {
                 return new RedisPushClient(configuration);
-            });
+            }).Value;
 
             _loggingFormat = (ILoggingFormat)Activator.CreateInstance(configuration.LoggingFormatType, configuration.EventTypeProperties);
         }
@@ -46,7 +49,7 @@ namespace Microsoft.Extensions.Logging.RedisProvider
         public void Submit(EventBuilder builder)
         {
             var json = _loggingFormat.GetFormatLog(builder);
-            _redisPushClient.Value.Push(json);
+            _redisPushClient.Push(json);
         }
     }
 }
